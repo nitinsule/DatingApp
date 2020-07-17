@@ -20,6 +20,8 @@ export class AuthService {
         {
           localStorage.setItem('token', user.token);
         }
+      }, (error: any) => {
+        console.log(error);
       })
     );
   }
