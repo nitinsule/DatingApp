@@ -1,5 +1,4 @@
 D:\DatingApp\DatingApp.API\bin\Debug\netcoreapp3.1\appsettings.Development.json
-D:\DatingApp\DatingApp.API\bin\Debug\netcoreapp3.1\appsettings.json
 D:\DatingApp\DatingApp.API\bin\Debug\netcoreapp3.1\Properties\launchSettings.json
 D:\DatingApp\DatingApp.API\bin\Debug\netcoreapp3.1\DatingApp.API.exe
 D:\DatingApp\DatingApp.API\bin\Debug\netcoreapp3.1\DatingApp.API.deps.json
