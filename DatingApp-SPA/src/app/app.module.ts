@@ -27,6 +27,9 @@ import { AuthGuard } from './_guards/auth.guard';
 import { UserService } from './_services/user.service';
 import {MemberDetailResolver} from './_resolver/member-detail.resolver';
 import {MemberListResolver} from './_resolver/member-list.resolver';
+import { MemberEditComponent } from './members/member-edit/member-edit.component';
+import {MemberEditResolver} from './_resolver/member-edit.resolve';
+import {PreventUnsavedChangesGuard} from './_guards/prevent-unsaved-changes.guard';
 
 
 @NgModule({
@@ -39,7 +42,8 @@ import {MemberListResolver} from './_resolver/member-list.resolver';
     ListsComponent,
     MessagesComponent,
     MemberCardComponent,
-    MemberDetailComponent
+    MemberDetailComponent,
+    MemberEditComponent
   ],
   imports: [
     BrowserModule,
@@ -71,7 +75,9 @@ import {MemberListResolver} from './_resolver/member-list.resolver';
     AuthGuard,
     UserService,
     MemberDetailResolver,
-    MemberListResolver
+    MemberListResolver,
+    MemberEditResolver,
+    PreventUnsavedChangesGuard
   ],
   bootstrap: [AppComponent]
 })
