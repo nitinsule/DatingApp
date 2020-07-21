@@ -1,35 +1,56 @@
 import { Injectable } from '@angular/core';
-import {HttpClient} from '@angular/common/http';
+import { HttpClient, HttpInterceptor, HttpRequest, HttpHandler, HttpEvent, HttpResponse } from '@angular/common/http';
 import { analyzeAndValidateNgModules } from '@angular/compiler';
-import {map} from 'rxjs/operators';
-import {JwtHelperService} from '@auth0/angular-jwt';
+import { map } from 'rxjs/operators';
+import { JwtHelperService } from '@auth0/angular-jwt';
+import { environment } from 'src/environments/environment';
+import { Observable } from 'rxjs';
 
 
 @Injectable({
   providedIn: 'root'
 })
-export class AuthService {
-  baseUrl = 'http://localhost:5000/api/auth/';
+export class AuthService implements HttpInterceptor {
+  baseUrl = environment.apiUrl + 'auth/';
   jwtHelper = new JwtHelperService();
   decodeToken: any;
 
-  constructor(private http: HttpClient) { }
+  intercept(req: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
+    const token: string = localStorage.getItem('token');
+    if (token) {
+      req = req.clone({ headers: req.headers.set('Authorization', 'Bearer ' + token) });
+    }
 
-  Login(model: any ): any {
-    return this.http.post(this.baseUrl + 'login', model)
-    .pipe(
-      map((response: any) => {
-        const user = response;
-        if (user)
-        {
-          localStorage.setItem('token', user.token);
-          this.decodeToken = this.jwtHelper.decodeToken(user.token);
-          console.log(this.decodeToken);
+    if (!req.headers.has('Content-Type')) {
+      req = req.clone({ headers: req.headers.set('Content-Type', 'application/json') });
+    }
+    req = req.clone({ headers: req.headers.set('Accept', 'application/json') });
+
+    return next.handle(req).pipe(
+      map((event: HttpEvent<any>) => {
+        if (event instanceof HttpResponse) {
+          console.log('event--->>>', event);
         }
-      }, (error: any) => {
-        console.log(error);
+        return event;
       })
     );
+  }
+  constructor(private http: HttpClient) { }
+
+  Login(model: any): any {
+    return this.http.post(this.baseUrl + 'login', model)
+      .pipe(
+        map((response: any) => {
+          const user = response;
+          if (user) {
+            localStorage.setItem('token', user.token);
+            this.decodeToken = this.jwtHelper.decodeToken(user.token);
+            console.log(this.decodeToken);
+          }
+        }, (error: any) => {
+          console.log(error);
+        })
+      );
   }
 
   register(model: any): any {

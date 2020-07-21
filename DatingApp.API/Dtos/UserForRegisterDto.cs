@@ -7,7 +7,7 @@ namespace DatingApp.API.Dtos
         [Required]
         public string Username {get;set;}
         [Required]
-        [StringLength(8,MinimumLength=4,ErrorMessage="you must specify")]
+        [StringLength(8,MinimumLength=4,ErrorMessage="you must specify ")]
         public string  Password { get; set; }
     }
 }
