@@ -25,8 +25,14 @@ namespace DatingApp.API
 {
     public class Startup
     {
-        public Startup(IConfiguration configuration)
+        public Startup(IConfiguration configuration, IWebHostEnvironment environment)
         {
+            var builder = new ConfigurationBuilder()
+                .SetBasePath(environment.ContentRootPath)
+                .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
+                .AddJsonFile($"appsettings.Development.json", optional: true)
+                .AddEnvironmentVariables();
+            configuration = builder.Build();
             Configuration = configuration;
         }
 
@@ -35,22 +41,28 @@ namespace DatingApp.API
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddDbContext<DataContext>(x =>x.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
-            services.AddControllers().AddNewtonsoftJson(opt =>{
-                opt.SerializerSettings.ReferenceLoopHandling=Newtonsoft.Json.ReferenceLoopHandling.Ignore;
+            services.AddDbContext<DataContext>(x => x.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
+            services.AddControllers().AddNewtonsoftJson(opt =>
+            {
+                opt.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore;
             });
             services.AddCors();
             services.AddAutoMapper(typeof(DatingRepository).Assembly);
+            services.AddTransient<Seed>();
             services.AddMvc(option => option.EnableEndpointRouting = false);
-            services.AddScoped<IAuthRepository,AuthRepository>();
-            services.AddScoped<IDatingRepository,DatingRepository>();
+            var section = Configuration.GetSection("CloudinarySettings");
+            services.Configure<CloudinarySettings>(section);
+            services.AddScoped<IAuthRepository, AuthRepository>();
+            services.AddScoped<IDatingRepository, DatingRepository>();
             services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-            .AddJwtBearer(options =>{
-                options.TokenValidationParameters=new TokenValidationParameters{
-                    ValidateIssuerSigningKey=true,
-                    IssuerSigningKey=new SymmetricSecurityKey(Encoding.ASCII.GetBytes(Configuration.GetSection("AppSettings:Token").Value)),
-                    ValidateIssuer=false,
-                    ValidateAudience=false
+            .AddJwtBearer(options =>
+            {
+                options.TokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidateIssuerSigningKey = true,
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(Configuration.GetSection("AppSettings:Token").Value)),
+                    ValidateIssuer = false,
+                    ValidateAudience = false
 
                 };
             });
@@ -64,24 +76,27 @@ namespace DatingApp.API
             {
                 app.UseDeveloperExceptionPage();
             }
-            else{
-                app.UseExceptionHandler(builder => {
-                 builder.Run(async context => {
-                     context.Response.StatusCode=(int)HttpStatusCode.InternalServerError;
-                    var error=context.Features.Get<IExceptionHandlerFeature>();
-                    if(error!=null)
+            else
+            {
+                app.UseExceptionHandler(builder =>
+                {
+                    builder.Run(async context =>
                     {
-                        context.Response.AddAppicationError(error.Error.Message);
-                        await context.Response.WriteAsync(error.Error.Message);
-                    }
-                 });
+                        context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
+                        var error = context.Features.Get<IExceptionHandlerFeature>();
+                        if (error != null)
+                        {
+                            context.Response.AddAppicationError(error.Error.Message);
+                            await context.Response.WriteAsync(error.Error.Message);
+                        }
+                    });
 
                 });
             }
-            app.UseCors(r=>r.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader());
+            app.UseCors(r => r.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader());
             app.UseAuthentication();
             app.UseAuthorization();
-        
+
             app.UseMvc();
         }
     }

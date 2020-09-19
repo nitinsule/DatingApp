@@ -4,7 +4,8 @@ import { analyzeAndValidateNgModules } from '@angular/compiler';
 import { map } from 'rxjs/operators';
 import { JwtHelperService } from '@auth0/angular-jwt';
 import { environment } from 'src/environments/environment';
-import { Observable } from 'rxjs';
+import { Observable, BehaviorSubject } from 'rxjs';
+import { User } from '../_models/user';
 
 
 @Injectable({
@@ -14,13 +15,20 @@ export class AuthService implements HttpInterceptor {
   baseUrl = environment.apiUrl + 'auth/';
   jwtHelper = new JwtHelperService();
   decodeToken: any;
+  currentUser: User;
+  photoUrl = new BehaviorSubject<string>('../../assets/user.png');
+  currentPhotoUrl = this.photoUrl.asObservable();
 
   intercept(req: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
     const token: string = localStorage.getItem('token');
+    const user: User = JSON.parse(localStorage.getItem('user'));
     if (token) {
       req = req.clone({ headers: req.headers.set('Authorization', 'Bearer ' + token) });
     }
-
+    if (user) {
+      this.currentUser = user;
+      this.changeMemberPhoto(this.currentUser.photoUrl);
+    }
     if (!req.headers.has('Content-Type')) {
       req = req.clone({ headers: req.headers.set('Content-Type', 'application/json') });
     }
@@ -37,6 +45,11 @@ export class AuthService implements HttpInterceptor {
   }
   constructor(private http: HttpClient) { }
 
+  changeMemberPhoto(photoUrl: string)
+  {
+    this.photoUrl.next(photoUrl);
+  }
+
   Login(model: any): any {
     return this.http.post(this.baseUrl + 'login', model)
       .pipe(
@@ -44,8 +57,10 @@ export class AuthService implements HttpInterceptor {
           const user = response;
           if (user) {
             localStorage.setItem('token', user.token);
+            localStorage.setItem('user', JSON.stringify(user.user));
             this.decodeToken = this.jwtHelper.decodeToken(user.token);
-            console.log(this.decodeToken);
+            this.currentUser = user.user;
+            this.changeMemberPhoto(this.currentUser.photoUrl);
           }
         }, (error: any) => {
           console.log(error);
