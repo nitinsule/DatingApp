@@ -68,8 +68,8 @@ export class AuthService implements HttpInterceptor {
       );
   }
 
-  register(model: any): any {
-    return this.http.post(this.baseUrl + 'register', model);
+  register(user: User) {
+    return this.http.post(this.baseUrl + 'register', user);
   }
 
   loggedIn(): any {
