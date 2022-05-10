@@ -33,13 +33,6 @@ import { MemberEditComponent } from './members/member-edit/member-edit.component
 import {MemberEditResolver} from './_resolver/member-edit.resolve';
 import {PreventUnsavedChangesGuard} from './_guards/prevent-unsaved-changes.guard';
 import { PhotoEditorComponent } from './members/photo-editor/photo-editor.component';
-import {TimeAgoPipe} from 'time-ago-pipe';
-
-@Pipe({
-  name: 'timeAgo',
-  pure: false
-})
-export class TimeAgoExtendsPipe extends TimeAgoPipe {}
 
 @NgModule({
   declarations: [
@@ -53,8 +46,7 @@ export class TimeAgoExtendsPipe extends TimeAgoPipe {}
     MemberCardComponent,
     MemberDetailComponent,
     MemberEditComponent,
-    PhotoEditorComponent,
-    TimeAgoExtendsPipe
+    PhotoEditorComponent
   ],
   imports: [
     BrowserModule,
